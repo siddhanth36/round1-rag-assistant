@@ -24,9 +24,13 @@ urlpatterns = [
     path("api/supervisor/analytics/", assistant.analytics),
     path("api/products/", inspections.ProductList.as_view()),
     path("api/products/<str:product_id>/", inspections.ProductDetail.as_view()),
-    path("api/inspections/", inspections.create_inspection),
+    path("api/inspections/", inspections.Inspections.as_view()),
+    path("api/inspections/batches/", inspections.Batches.as_view()),
+    path("api/inspections/batches/<int:pk>/", inspections.batch_detail),
+    path("api/inspections/metrics/", inspections.metrics),
     path("api/inspections/<int:pk>/", inspections.InspectionDetail.as_view()),
     path("api/inspections/<int:pk>/image/", inspections.inspection_image),
+    path("api/inspections/<int:pk>/review/", inspections.review_inspection),
     path("", include("backend.inspections.pages")),  # Round 2 pages (frontend teammate)
     path("", include("backend.config.pages")),
 ]

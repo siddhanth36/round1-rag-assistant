@@ -78,6 +78,28 @@ python -m pytest rag/tests -v     # from the repository root
 python -m rag.evaluation          # 13-question retrieval evaluation on the supplied manuals
 ```
 
+## Round 2: visual inspection services
+
+Single inspections run synchronously in Django. Batch inspections (`POST /api/inspections/batches/`) need
+Redis and a Celery worker; without them the batch is still saved and the unqueued images are marked failed.
+Three terminals, from the repository root with `.venv` active:
+
+```bash
+redis-server --bind 127.0.0.1 --port 6379          # or the system service: sudo systemctl start redis-server
+python manage.py runserver
+celery -A backend.config worker --loglevel=info     # default prefork pool; it answers health pings while busy
+```
+
+`CELERY_BROKER_URL` (in `backend/.env`) defaults to `redis://localhost:6379/0`.
+
+Model metrics (`GET /api/inspections/metrics/`) are generated once by scoring the 60 labeled samples through
+the same validation and model path as uploads. It writes only `media/metrics/inspection_metrics.json`
+(git-ignored), never the database:
+
+```bash
+python manage.py evaluate_samples                   # exit 1 if any sample could not be scored (listed)
+```
+
 ## Configuration
 
 All settings are environment variables with safe defaults; see `.env.example`. The vector index is stored in

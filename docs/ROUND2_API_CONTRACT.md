@@ -179,7 +179,7 @@ Django admin (`/admin/`) also manages products. The brief allows this.
 - **Errors:** `404` for failed attempts, which have no stored image.
 - **Use:** put it straight into `<img src>`; the session cookie authenticates it. Images are never served from a public `/media/` URL.
 
-### 3.4 Batch upload: In progress (R2-4)
+### 3.4 Batch upload: Built
 
 **`POST /api/inspections/batches/`**
 - **Roles:** ENGINEER, ADMIN. Supervisor gets 403.
@@ -235,7 +235,7 @@ Django admin (`/admin/`) also manages products. The brief allows this.
   - `null` once `done`, because no ping is needed then.
 - `warning` is a readable string when `worker_online` is false and items are still queued; otherwise `null`. Show it prominently.
 
-### 3.5 Inspection history: Planned (R2-5)
+### 3.5 Inspection history: Built
 
 **`GET /api/inspections/?prediction=&review_status=&status=&product=&from=&to=&page=`**
 - **Roles:** any logged-in user. Engineers get their own inspections; Supervisors and Admins get all.
@@ -260,7 +260,7 @@ Django admin (`/admin/`) also manages products. The brief allows this.
      "results": [ <inspection object without "reviews"; with "current_review"> ]}
 ```
 
-### 3.6 Supervisor review: Planned (R2-5)
+### 3.6 Supervisor review: Built
 
 **`POST /api/inspections/<id>/review/`**
 - **Roles:** **SUPERVISOR only.** Engineer and Admin get `403` (checked before the body is read). No review
@@ -288,7 +288,7 @@ Django admin (`/admin/`) also manages products. The brief allows this.
 The demo includes "attempt a review as Engineer". The UI may show the review action to Engineers so the
 server's 403 can be demonstrated. On a 403, show the message and reload the inspection to prove nothing changed.
 
-### 3.7 Model metrics: Planned (R2-5)
+### 3.7 Model metrics: Built
 
 **`GET /api/inspections/metrics/`**
 - **Roles:** any logged-in user (read-only).
@@ -321,3 +321,20 @@ server's 403 can be demonstrated. On a 403, show the message and reload the insp
   "reason": "file missing" | "<validation or model reason>"}]`. Failed and missing samples are reported here,
   never silently dropped.
 - The numbers above are the real values measured on the supplied model and samples.
+
+---
+
+## 4. Backend notes (additions; no request or response shape changed)
+
+- **History:** an unknown query parameter is a 400 (`{"predction": ["Unknown filter."]}`), so a misspelt filter
+  never silently returns everything. `from` after `to` is `400 {"to": ["The end date is before the start date."]}`.
+  An unknown `product` is `400 {"product": ["Select a valid choice. That choice is not one of the available choices."]}`.
+  `page` must be a whole number ≥ 1 (400 otherwise); a page past the end is DRF's `404 {"detail": "Invalid page."}`.
+  `next`/`previous` are relative links; DRF orders their query parameters alphabetically (`?page=2&status=completed`).
+- **Batch item failure reasons** besides §3.2 and the Redis message: `The stored image file is missing.` (the file
+  disappeared before the worker ran) and `The inspection could not be processed.` (unexpected worker error).
+  Model errors keep `The model could not process this image.`
+- **Redis down:** queuing stops at the first broker failure and every item not yet sent is marked failed, so the
+  request returns quickly (broker connect timeout 1 s).
+- **Metrics storage:** `evaluate_samples` writes a JSON report file (`INSPECTION_METRICS_FILE`, default
+  `media/metrics/inspection_metrics.json`), not database rows; the endpoint adds the three limitations above.

@@ -133,7 +133,7 @@ class SingleInspectionTests(InspectionTestCase):
     def test_inference_error_is_saved_as_failed_without_a_prediction(self):
         self.as_role("ENGINEER")
         broken = mock.Mock(side_effect=RuntimeError("weights unreadable"))
-        with mock.patch("backend.inspections.ai_adapter._model_predict", return_value=broken):
+        with mock.patch("inspection_ai.predict_image", broken):
             response = self.inspect()
         self.assertEqual(response.status_code, 502)
         self.assertEqual(response.data["status"], "failed")
@@ -208,6 +208,12 @@ class InspectionPermissionTests(InspectionTestCase):
         self.assertEqual(self.client.get(f"/api/inspections/{pk}/image/").status_code, 404)
         self.assertIsNone(self.client.get(f"/api/inspections/{pk}/").data["image_url"])
 
+    def test_missing_stored_image_is_404_not_500(self):
+        self.as_role("ENGINEER")
+        pk = self.inspect().data["id"]
+        Path(Inspection.objects.get(pk=pk).image.path).unlink()
+        self.assertEqual(self.client.get(f"/api/inspections/{pk}/image/").status_code, 404)
+
     def test_detail_shape_has_empty_reviews(self):
         self.as_role("ENGINEER")
         pk = self.inspect().data["id"]
@@ -250,7 +256,7 @@ class ProductApiTests(InspectionTestCase):
 
 class AdapterOutputCheckTests(SimpleTestCase):
     def predict_with(self, output):
-        with mock.patch("backend.inspections.ai_adapter._model_predict", return_value=lambda path: output):
+        with mock.patch("inspection_ai.predict_image", lambda path: output):
             return ai_adapter.predict_image("unused.png")
 
     def test_valid_output_passes_through_with_exactly_four_keys(self):

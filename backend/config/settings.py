@@ -95,8 +95,33 @@ LOGIN_URL = "/login/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", "").strip() or BASE_DIR / "media")
 MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "20"))
 
-# Round 2 pack folder holding the supplied, unmodified Model/inference.py + classifier.npz.
-INSPECTION_MODEL_DIR = Path(os.environ.get("INSPECTION_MODEL_DIR", "").strip() or BASE_DIR / "challenge-pack-r2" / "Model")
+# Round 2: the 60 labeled samples scored by `manage.py evaluate_samples`, and where its report is written.
+# The report is a generated file (like the Chroma index), not database rows: GET /api/inspections/metrics/ reads it.
+INSPECTION_SAMPLES_DIR = Path(os.environ.get("INSPECTION_SAMPLES_DIR", "").strip()
+                              or BASE_DIR / "challenge-pack-r2" / "Samples")
+INSPECTION_METRICS_FILE = Path(os.environ.get("INSPECTION_METRICS_FILE", "").strip()
+                               or MEDIA_ROOT / "metrics" / "inspection_metrics.json")
+
+# --- Celery (batch inspections) ------------------------------------------------------------------
+# One task per batch item; the broker is Redis. No result backend: results are written to the database.
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "").strip() or "redis://localhost:6379/0"
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+# A task is acknowledged only after it finishes, so a worker that stops mid-task gets it redelivered;
+# the task is idempotent (services.record_prediction never overwrites a final result).
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_CANCEL_LONG_RUNNING_TASKS_ON_CONNECTION_LOSS = True
+CELERY_TASK_SOFT_TIME_LIMIT = 60  # seconds; raises inside the model call -> the item fails readably
+CELERY_TASK_TIME_LIMIT = 90
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True  # the worker waits for Redis instead of exiting
+# Fail fast when Redis is down so an upload request isn't held for long: the items are marked failed.
+CELERY_BROKER_CONNECTION_TIMEOUT = 1
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 600, "socket_connect_timeout": 1, "socket_timeout": 5}
+CELERY_TASK_PUBLISH_RETRY_POLICY = {"max_retries": 1, "interval_start": 0, "interval_step": 0.2, "interval_max": 0.2}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["backend.accounts.authentication.SessionAuthentication401"],

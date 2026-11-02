@@ -15,6 +15,11 @@ python-dotenv==1.2.4
 # Same range as rag/requirements.txt; Django uses it to reject uploads PyMuPDF can't open.
 pymupdf==1.28.2
 
+# Round 2: frozen model's own pin (inspection_ai/requirements.txt), also used for upload validation.
+Pillow==12.3.0
+# Round 2 batch inspections: one background task per image, Redis as the broker (contract §3.4).
+celery[redis]==5.6.3
+
 # tests: one runner for both suites (pytest-django runs the Django TestCases, plain pytest runs rag/tests)
 pytest==9.2.0
 pytest-django==4.14.0

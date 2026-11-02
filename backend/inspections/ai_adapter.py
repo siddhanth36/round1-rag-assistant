@@ -1,19 +1,13 @@
-"""The ONLY module that touches the inspection model.
+"""The ONLY module that touches the inspection model: the frozen ``inspection_ai`` package, called unchanged.
 
-Source, in order: the teammate's ``inspection_ai`` package once feature/round2-ai is merged; until then the
-supplied ``inference.py`` in settings.INSPECTION_MODEL_DIR, loaded by path and called unchanged. Its
-preprocessing, weights and 0.5 threshold are never copied or re-implemented here. The model sees only the
+Its preprocessing, weights and 0.5 threshold are never copied or re-implemented here. The model sees only the
 saved image path: no filename, folder or CSV information is ever used to decide a label.
 """
 
-import importlib.util
 import logging
 import math
-from collections.abc import Callable
-from functools import cache
-from pathlib import Path
 
-from django.conf import settings
+import inspection_ai
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +22,7 @@ class InferenceError(Exception):
 def predict_image(path: str) -> dict:
     """Run the frozen classifier on a validated, stored image and return exactly ``KEYS``."""
     try:
-        result = _model_predict()(str(path))
+        result = inspection_ai.predict_image(str(path))
     except Exception as exc:
         logger.exception("Model inference failed for %s", path)
         raise InferenceError("The model could not process this image.") from exc
@@ -50,21 +44,3 @@ def _checked(result) -> dict:
         logger.error("Model returned an out-of-range result: %r", result)
         raise InferenceError("The model returned an invalid result.")
     return output
-
-
-@cache
-def _model_predict() -> Callable[[str], dict]:
-    try:
-        from inspection_ai import predict_image as teammate_predict  # feature/round2-ai
-    except ModuleNotFoundError as exc:
-        if exc.name != "inspection_ai":
-            raise  # the package exists but is broken: fail loudly, don't fall back silently
-    else:
-        return teammate_predict
-
-    # ponytail: replace with inspection_ai once merged (delete this fallback and INSPECTION_MODEL_DIR).
-    path = Path(settings.INSPECTION_MODEL_DIR) / "inference.py"
-    spec = importlib.util.spec_from_file_location("bit_plate_cv_inference", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)  # FileNotFoundError if the pack is missing -> InferenceError above
-    return module.predict

@@ -1,3 +1,5 @@
+import logging
+
 from django.apps import AppConfig
 from django.db.backends.signals import connection_created
 
@@ -19,3 +21,8 @@ class InspectionsConfig(AppConfig):
 
     def ready(self):
         connection_created.connect(exact_float_output, dispatch_uid="inspections_exact_float_output")
+        from inspection_ai import verify_model_integrity
+
+        if not verify_model_integrity():  # each mismatch is logged by inspection_ai.integrity
+            logging.getLogger(__name__).critical(
+                "Frozen model files fail their SHA256 check: inspection results cannot be trusted.")
