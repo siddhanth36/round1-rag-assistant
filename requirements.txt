@@ -1,0 +1,20 @@
+# Part B (Django product) dependencies, pinned. Tested on Python 3.14.
+#
+# The RAG engine's dependencies live ONLY in rag/requirements.txt (single source of truth, see
+# docs/RAG_INTEGRATION_CONTRACT.md §11); they are included here, not copied.
+# Install torch from the CPU-only index FIRST (avoids GBs of CUDA libraries), then this file:
+#   python -m pip install "torch>=2.15,<3" --index-url https://download.pytorch.org/whl/cpu
+#   python -m pip install -r requirements.txt
+-r rag/requirements.txt
+
+Django==6.1.2
+djangorestframework==3.18.3
+dj-database-url==3.1.2
+psycopg[binary]==3.3.6
+python-dotenv==1.2.4
+# Same range as rag/requirements.txt; Django uses it to reject uploads PyMuPDF can't open.
+pymupdf==1.28.2
+
+# tests: one runner for both suites (pytest-django runs the Django TestCases, plain pytest runs rag/tests)
+pytest==9.2.0
+pytest-django==4.14.0

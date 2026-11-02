@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+{% if user.role == "ENGINEER" %}
+<div class="page-head">
+  <div><h1>Select a machine</h1><p>Answers use only the selected machine's manuals.</p></div>
+</div>
+<div class="split">
+  <section class="panel" aria-labelledby="machines-h">
+    <div class="panel-head"><h2 id="machines-h">Machines</h2><a class="small-ui" href="/machines/">All machine details</a></div>
+    <div id="machines" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+  </section>
+  <section class="panel" aria-labelledby="recent-h">
+    <div class="panel-head"><h2 id="recent-h">Recent questions</h2><a class="small-ui" href="/history/">View history</a></div>
+    <div id="recent" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+  </section>
+</div>
+
+{% elif user.role == "ADMIN" %}
+<div class="page-head">
+  <div><h1>Corpus status</h1><p>Registered machines, their manuals and indexing state.</p></div>
+  <a class="btn btn-primary btn-sm" href="/manage/"><i class="bi bi-upload" aria-hidden="true"></i> Register or upload</a>
+</div>
+<div class="stack">
+  <section class="panel" aria-labelledby="machines-h">
+    <div class="panel-head"><h2 id="machines-h">Machines</h2></div>
+    <div id="machines" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+  </section>
+  <section class="panel" aria-labelledby="manuals-h">
+    <div class="panel-head"><h2 id="manuals-h">Manuals and indexing</h2><a class="small-ui" href="/manuals/">Open library</a></div>
+    <div id="manuals" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+  </section>
+</div>
+
+{% else %}
+<div class="page-head">
+  <div><h1>Question review</h1><p>Outcomes across all engineers, and the questions the manuals could not answer.</p></div>
+  <a class="btn btn-outline-secondary btn-sm" href="/analytics/"><i class="bi bi-clipboard-data" aria-hidden="true"></i> Full analytics</a>
+</div>
+<div class="stack">
+  <section aria-label="Key metrics" id="kpis" aria-busy="true"><div class="skeleton" aria-hidden="true"><span></span></div></section>
+  <section class="panel" aria-labelledby="unanswered-h">
+    <div class="panel-head"><h2 id="unanswered-h">Recent unanswered</h2><a class="small-ui" href="/analytics/?status=unanswered">Open queue</a></div>
+    <div id="unanswered" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+  </section>
+</div>
+{% endif %}
+{% endblock %}

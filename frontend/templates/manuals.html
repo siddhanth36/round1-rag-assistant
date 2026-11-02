@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Manuals</h1><p>The only documents answers are drawn from. Each manual belongs to one machine.</p></div>
+  {% if user.role == "ADMIN" %}<a class="btn btn-primary btn-sm" href="/manage/"><i class="bi bi-upload" aria-hidden="true"></i> Upload manual</a>{% endif %}
+</div>
+<section class="panel" aria-labelledby="library-h">
+  <div class="panel-head">
+    <h2 id="library-h">Library</h2>
+    <form class="filters" id="filters">
+      <div>
+        <label class="form-label" for="machine-filter">Machine</label>
+        <select class="form-select form-select-sm" id="machine-filter" name="machine"><option value="">All machines</option></select>
+      </div>
+    </form>
+  </div>
+  <div id="manuals" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</section>
+{% endblock %}

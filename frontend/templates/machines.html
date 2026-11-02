@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Machines</h1>
+    <p>{% if user.role == "ENGINEER" %}Choose the machine you are working on. The assistant searches only that machine's manuals, so an alarm code always means what it means on that machine.{% else %}Registered machines and the manuals each one is answered from.{% endif %}</p>
+  </div>
+</div>
+<section class="panel" aria-labelledby="list-h">
+  <div class="panel-head"><h2 id="list-h">Registered machines</h2><span class="readout" id="selected-readout"></span></div>
+  <div id="machines" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</section>
+{% endblock %}

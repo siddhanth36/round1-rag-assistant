@@ -1,0 +1,42 @@
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  {% include "_head.html" %}
+  <title>Sign in · INDUSTRIX AI</title>
+</head>
+<body>
+  <div class="login">
+    <aside class="login-aside">
+      <span class="brand p-0 border-0"><span class="brand-mark" aria-hidden="true">IX</span>INDUSTRIX AI</span>
+      <p>Maintenance answers from your machine's own manuals, with the page to prove it.</p>
+      <div class="schematic" aria-label="How every answer is sourced">
+        <div class="mb-1">How every answer is sourced</div>
+        <strong>[M-xxxx]</strong> → DOC-ID | Rev x.x | Page n
+      </div>
+    </aside>
+    <main class="login-main" id="main">
+      <form class="login-form" id="login-form" novalidate>
+        <h1>Sign in</h1>
+        <div>
+          <label class="form-label" for="username">Username</label>
+          <input class="form-control" id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+        </div>
+        <div>
+          <label class="form-label" for="password">Password</label>
+          <div class="input-group">
+            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+            <button class="btn btn-outline-secondary" type="button" id="toggle-password" aria-pressed="false" aria-controls="password">Show</button>
+          </div>
+        </div>
+        <div class="notice notice-danger" id="login-error" role="alert" hidden>
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span></span>
+        </div>
+        <button class="btn btn-primary" type="submit" id="login-submit">Sign in</button>
+        <p class="subtle small-ui m-0">Accounts are issued by your administrator.</p>
+      </form>
+    </main>
+  </div>
+  <div class="toast-stack" id="toasts"></div>
+  <script type="module" src="{% static 'js/login.js' %}"></script>
+</body>
+</html>
