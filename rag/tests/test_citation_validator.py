@@ -203,3 +203,45 @@ def test_one_unsupported_statement_rejects_whole_answer(hp_sources) -> None:
 def test_insufficient_draft_is_not_an_answer(hp_sources) -> None:
     outcome = validate_draft(LLMDraft("insufficient_evidence", ()), hp_sources, HP)
     assert not outcome.is_valid
+
+
+# --- Unicode hyphens (live gpt-oss-120b output used U+2011) ------------------------------------
+
+NBH = "‑"  # NON-BREAKING HYPHEN
+
+
+@pytest.mark.parametrize("dash", ["‐", NBH, "‒", "–", "—", "―", "−"])
+def test_unicode_hyphen_document_id_is_checked_like_ascii(hp_sources, dash) -> None:
+    """HP‑MNT‑01 (S2's own document) is accepted; HP‑XYZ‑99 is still caught as fabricated."""
+    ok = _draft((f"First check the reservoir level relative to MIN and MAX per HP{dash}MNT{dash}01.", ["S2"]))
+    assert validate_draft(ok, hp_sources, HP).is_valid
+    assert "mentions document HP-XYZ-99" in _reasons(_draft((f"HP{dash}XYZ{dash}99 says check MIN and MAX.", ["S2"])), hp_sources)
+
+
+def test_unicode_hyphen_part_present_in_evidence_is_accepted(manual_chunks) -> None:
+    """AF‑10 written with U+2011 is recognized as the AF-10 printed in the AC-90 manual."""
+    sources = {"S1": search_result(_chunk(manual_chunks, "AC-OM-01:1.0:p3:c0"))}
+    draft = _draft((f"The AF{NBH}10 indicator is checked every 100 operating hours.", ["S1"]))
+    assert validate_draft(draft, sources, "M-AC90").is_valid
+
+
+def test_unicode_hyphen_foreign_identifiers_still_rejected(hp_sources) -> None:
+    """AF-10 (AC-90 part) and M-AC90 cited against HP-200 evidence must not slip through via U+2011."""
+    reasons = _reasons(_draft((f"Replace the AF{NBH}10 filter as on M{NBH}AC90.", ["S2"])), hp_sources)
+    assert "code/identifier AF-10" in reasons and "code/identifier M-AC90" in reasons
+
+
+def test_ascii_identifiers_unchanged(hp_sources) -> None:
+    assert validate_draft(_draft(("Check MIN and MAX per HP-MNT-01.", ["S2"])), hp_sources, HP).is_valid
+    assert "code/identifier AF-10" in _reasons(_draft(("Check the AF-10 filter.", ["S2"])), hp_sources)
+
+
+def test_displayed_answer_keeps_original_characters(hp_sources) -> None:
+    text = f"Normal hydraulic pressure is 120 to 140 bar during the forming stage {NBH} per HP{NBH}OPS{NBH}01."
+    outcome = validate_draft(_draft((text, ["S1"])), hp_sources, HP)
+    assert outcome.is_valid
+    assert outcome.answer_text == f"{text} [S1]"  # no dash rewriting in what the user sees
+
+
+def test_unicode_minus_does_not_hide_unsupported_number(hp_sources) -> None:
+    assert "value 150" in _reasons(_draft(("Normal pressure is −150 bar.", ["S1"])), hp_sources)

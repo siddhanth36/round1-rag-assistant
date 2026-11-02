@@ -42,6 +42,8 @@ _REVISION_REF = re.compile(r"\b(?:rev|revision)\.?\s+(\d+(?:\.\d+)*)\b", re.IGNO
 _ERROR_CODE = re.compile(r"\bE\d{2,3}\b")
 _IDENTIFIER = re.compile(r"\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b")  # RF-20, AF-10, AC-L32, M-HP200
 _NUMBER = re.compile(r"\d+(?:,\d{3})*(?:\.\d+)?")
+# U+2010..U+2015 hyphens/dashes and U+2212 minus -> ASCII "-", so "HP\u2011MNT\u201101" is checked as HP-MNT-01.
+_DASHES = str.maketrans(dict.fromkeys([*map(chr, range(0x2010, 0x2016)), "\u2212"], "-"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,8 +141,9 @@ def _check_statement(statement: DraftStatement, sources: Mapping[str, SearchResu
     if problems:
         return problems
 
-    text = _INLINE_TAG.sub(" ", statement.text)
-    evidence = " ".join(r.text for r in records)
+    # Compare on dash-normalized copies; the displayed answer keeps the original characters.
+    text = _INLINE_TAG.sub(" ", statement.text).translate(_DASHES)
+    evidence = " ".join(r.text for r in records).translate(_DASHES)
 
     # A document/page/revision reference is allowed if it is one of the cited records' own
     # values, or if the cited passage itself contains it (a quoted cross-reference such as
