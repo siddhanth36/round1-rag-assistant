@@ -17,6 +17,7 @@ urlpatterns = [
     path("api/manuals/<int:pk>/", machines.ManualDetail.as_view()),
     path("api/manuals/<int:pk>/page/<int:page>/", machines.manual_page),
     path("api/manuals/<int:pk>/file/", machines.manual_file),
+    path("api/assistant/ask/", assistant.ask),
     path("api/history/", assistant.History.as_view()),
     path("api/supervisor/questions/", assistant.SupervisorQuestions.as_view()),
     path("api/supervisor/analytics/", assistant.analytics),

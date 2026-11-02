@@ -34,6 +34,8 @@ class Manual(models.Model):
     file = models.FileField(upload_to=manual_upload_path)
     page_count = models.PositiveSmallIntegerField()
     indexing_status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    indexing_error = models.TextField(blank=True)  # admin-only diagnostic when indexing failed
+    chunk_count = models.PositiveIntegerField(null=True, blank=True)  # chunks rag indexed for this revision
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

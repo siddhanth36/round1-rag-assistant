@@ -1,3 +1,4 @@
+import logging
 from pathlib import PurePath
 
 import pymupdf
@@ -6,6 +7,7 @@ from rest_framework import serializers
 
 from backend.machines.models import Machine, Manual
 
+logger = logging.getLogger(__name__)
 
 class MachineSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,7 +23,7 @@ class ManualSerializer(serializers.ModelSerializer):
     class Meta:
         model = Manual
         fields = ["id", "machine_id", "document_id", "revision", "original_filename", "page_count",
-                  "indexing_status", "uploaded_by", "uploaded_at", "file_url"]
+                  "indexing_status", "indexing_error", "chunk_count", "uploaded_by", "uploaded_at", "file_url"]
 
     def get_file_url(self, manual: Manual) -> str:
         return f"/api/manuals/{manual.id}/file/"
@@ -81,8 +83,18 @@ class ManualUploadSerializer(serializers.ModelSerializer):
         return manual
 
 
-def request_indexing(manual: Manual) -> None:
-    """HOOK: rag/ indexing (extract_pdf -> chunk_document -> store.index_manual) is wired in here in the next step.
+def request_indexing(manual: Manual) -> Manual:
+    """Index a stored manual through rag (via the adapter) and record the outcome on the row."""
+    from backend.assistant import rag_adapter  # deferred: keeps rag/chromadb out of every Django import
 
-    ponytail: intentionally a no-op for now. The manual stays "pending"; nothing pretends to index it.
-    """
+    try:
+        _, summary = rag_adapter.index_manual(manual.file.path, machine_id=manual.machine.machine_id,
+                                              document_id=manual.document_id, revision=manual.revision,
+                                              source_filename=manual.original_filename)
+    except Exception as exc:  # RagError or an unexpected failure: the manual must not look usable
+        logger.exception("Indexing failed for %s rev %s", manual.document_id, manual.revision)
+        manual.indexing_status, manual.indexing_error, manual.chunk_count = Manual.Status.FAILED, f"{type(exc).__name__}: {exc}"[:2000], None
+    else:
+        manual.indexing_status, manual.indexing_error, manual.chunk_count = Manual.Status.INDEXED, "", summary.chunks_indexed
+    manual.save(update_fields=["indexing_status", "indexing_error", "chunk_count"])
+    return manual

@@ -2,6 +2,8 @@ import csv
 import tempfile
 from io import StringIO
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 import pymupdf
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -26,6 +28,9 @@ class ManualTestCase(TestCase):
     def setUp(self):
         self.media = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self.enterContext(override_settings(MEDIA_ROOT=self.media))
+        # rag indexing is stubbed here (these tests cover Django validation/storage, not the engine)
+        self.index = self.enterContext(mock.patch("backend.assistant.rag_adapter.index_manual",
+                                                  return_value=(3, SimpleNamespace(chunks_indexed=6))))
         self.users = {role: User.objects.create_user(username=role.lower(), password="x", role=role)
                       for role in User.Role.values}
         self.hp = Machine.objects.create(machine_id="M-HP200", model="HP-200", machine_name="Hydraulic forming press")
@@ -61,17 +66,28 @@ class UploadPermissionTests(ManualTestCase):
     def test_anonymous_upload_is_401(self):
         self.assertEqual(self.upload().status_code, 401)
 
-    def test_admin_upload_is_stored_under_a_generated_name_and_pending(self):
+    def test_admin_upload_is_stored_under_a_generated_name_and_indexed(self):
         self.as_role("ADMIN")
         response = self.upload()
         self.assertEqual(response.status_code, 201, response.content)
         body = response.json()
-        self.assertEqual((body["document_id"], body["revision"], body["page_count"], body["indexing_status"]),
-                         ("HP-OPS-01", "1.0", 3, "pending"))
+        self.assertEqual((body["document_id"], body["revision"], body["page_count"], body["indexing_status"], body["chunk_count"]),
+                         ("HP-OPS-01", "1.0", 3, "indexed", 6))
         self.assertEqual(body["original_filename"], "HP200_Operations_Rev1_0.pdf")
         manual = Manual.objects.get()
         self.assertRegex(manual.file.name, r"^manuals/[0-9a-f]{32}\.pdf$")
         self.assertEqual(manual.uploaded_by, self.users["ADMIN"])
+        kwargs = self.index.call_args.kwargs  # rag gets the DB machine_id and the stored file, never the user's path
+        self.assertEqual((kwargs["machine_id"], kwargs["document_id"], kwargs["source_filename"]),
+                         ("M-HP200", "HP-OPS-01", "HP200_Operations_Rev1_0.pdf"))
+        self.assertEqual(self.index.call_args.args[0], manual.file.path)
+
+    def test_indexing_failure_is_recorded_not_hidden(self):
+        self.index.side_effect = RuntimeError("embedding model offline")
+        self.as_role("ADMIN")
+        body = self.upload().json()
+        self.assertEqual((body["indexing_status"], body["chunk_count"]), ("failed", None))
+        self.assertIn("embedding model offline", body["indexing_error"])
 
 
 class UploadValidationTests(ManualTestCase):

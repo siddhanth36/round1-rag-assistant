@@ -1,5 +1,9 @@
+import logging
+import re
+import time
 from datetime import date, timedelta
 
+from django.db import transaction
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.utils import timezone
@@ -11,11 +15,17 @@ from rest_framework.response import Response
 
 from backend.accounts.models import User
 from backend.accounts.permissions import HasRole, IsEngineer
-from backend.assistant.models import Answer, Question
-from backend.machines.models import Machine
+from backend.assistant import rag_adapter
+from backend.assistant.models import Answer, Citation, Question
+from backend.machines.models import Machine, Manual
 from backend.machines.serializers import MachineSerializer
 
+logger = logging.getLogger(__name__)
 IsSupervisorOrAdmin = HasRole(User.Role.SUPERVISOR, User.Role.ADMIN)
+CanAsk = HasRole(User.Role.ENGINEER, User.Role.ADMIN)  # Admin allowed for the demo
+ERROR_TEXT = "The assistant could not complete this request. It has been logged."
+RAG_STATUS = {"answered": Answer.Status.ANSWERED, "insufficient_evidence": Answer.Status.INSUFFICIENT_EVIDENCE}
+# provider_unavailable / generation_error (and any raised exception) -> error
 UNANSWERED = "unanswered"  # filter value: insufficient_evidence, error, or no Answer row
 
 
@@ -101,6 +111,73 @@ class SupervisorQuestions(generics.ListAPIView):
                 except ValueError:
                     raise ValidationError({param: "Use a date in YYYY-MM-DD format."}) from None
         return qs
+
+
+class AskSerializer(serializers.Serializer):
+    machine_id = serializers.SlugRelatedField(slug_field="machine_id", queryset=Machine.objects.all(), source="machine")
+    question = serializers.CharField(max_length=1000, trim_whitespace=True)  # same limit as rag's answer_question
+
+
+def resolve_citations(result, machine: Machine):
+    """Keep only citations that resolve to an indexed Manual of the selected machine; log and drop the rest."""
+    manuals = {(m.document_id, m.revision): m for m in machine.manuals.filter(indexing_status=Manual.Status.INDEXED)}
+    kept, dropped = [], []
+    for c in result.citations:
+        manual = manuals.get((c.document_id, c.revision))
+        if manual and c.machine_id == machine.machine_id and 1 <= c.pdf_page <= manual.page_count:
+            kept.append((c, manual))
+        else:
+            dropped.append(f"{c.source_tag} {c.document_id} rev {c.revision} p{c.pdf_page} ({c.machine_id})")
+            logger.warning("Dropped citation %s for machine %s", dropped[-1], machine.machine_id)
+    return kept, dropped
+
+
+def trace_of(result, dropped) -> dict:
+    r = result.retrieval
+    return {"rag_status": str(result.status), "llm_model": result.llm_model, "retrieved_count": r.retrieved_count,
+            "limit": r.limit, "max_distance": r.max_distance, "rejection_reasons": list(result.rejection_reasons),
+            "error": result.error, "dropped_citations": dropped,
+            "evidence": [{"source_tag": e.source_tag, "chunk_id": e.chunk_id, "document_id": e.document_id,
+                          "revision": e.revision, "pdf_page": e.pdf_page, "cosine_distance": e.cosine_distance}
+                         for e in r.evidence]}
+
+
+@api_view(["POST"])
+@permission_classes([CanAsk])
+def ask(request):
+    data = AskSerializer(data=request.data)
+    data.is_valid(raise_exception=True)
+    machine, text = data.validated_data["machine"], data.validated_data["question"]
+    question = Question.objects.create(user=request.user, machine=machine, text=text)  # logged before RAG runs
+
+    started = time.perf_counter()
+    kept = []
+    try:
+        result = rag_adapter.ask(text, machine.machine_id)
+    except Exception as exc:  # RagError (vector store, config) or provider/unexpected failure: never a fake answer
+        logger.exception("RAG failed for question %s", question.pk)
+        status, answer_text, trace = Answer.Status.ERROR, ERROR_TEXT, {"error": type(exc).__name__}
+    else:
+        status = RAG_STATUS.get(str(result.status), Answer.Status.ERROR)
+        kept, dropped = resolve_citations(result, machine)
+        trace = trace_of(result, dropped)
+        answer_text = result.answer if status != Answer.Status.ERROR else ERROR_TEXT
+        if status == Answer.Status.ANSWERED:
+            # Every [S#] shown in the answer must have a citation we can show; otherwise it isn't proven.
+            tags_in_text = set(re.findall(r"\[(S\d+)\]", result.answer))
+            if not kept or not tags_in_text <= {c.source_tag for c, _ in kept}:
+                status, answer_text = Answer.Status.INSUFFICIENT_EVIDENCE, rag_adapter.INSUFFICIENT_EVIDENCE_MESSAGE
+        if status != Answer.Status.ANSWERED:
+            kept = []
+    latency_ms = round((time.perf_counter() - started) * 1000)
+
+    with transaction.atomic():
+        answer = Answer.objects.create(question=question, text=answer_text, status=status,
+                                       retrieval_trace=trace, latency_ms=latency_ms)
+        Citation.objects.bulk_create([
+            Citation(answer=answer, manual=manual, document_id=c.document_id, revision=c.revision,
+                     pdf_page=c.pdf_page, passage=c.passage, source_tag=c.source_tag) for c, manual in kept])
+    return Response(QuestionSerializer(questions().get(pk=question.pk)).data, status=201)
 
 
 @api_view(["GET"])
