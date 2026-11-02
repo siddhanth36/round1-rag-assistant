@@ -27,5 +27,6 @@ urlpatterns = [
     path("api/inspections/", inspections.create_inspection),
     path("api/inspections/<int:pk>/", inspections.InspectionDetail.as_view()),
     path("api/inspections/<int:pk>/image/", inspections.inspection_image),
+    path("", include("backend.inspections.pages")),  # Round 2 pages (frontend teammate)
     path("", include("backend.config.pages")),
 ]

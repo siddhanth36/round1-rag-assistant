@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{# Example stub for the Round 2 page pattern. The frontend teammate owns this file and builds the real screen. #}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Inspect</h1>
+    <p>Upload a JPEG or PNG of a supported product to get the model's prediction and confidence.</p>
+  </div>
+</div>
+<section class="panel" aria-labelledby="products-h">
+  <div class="panel-head"><h2 id="products-h">Products</h2></div>
+  <div id="products" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span></div></div></div>
+</section>
+{% endblock %}
