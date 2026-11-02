@@ -1,0 +1,4 @@
+machine_id,model,machine_name,document_id,revision,pdf_filename
+M-HP200,HP-200,Hydraulic forming press,HP-OPS-01,1.0,HP200_Operations_Rev1_0.pdf
+M-HP200,HP-200,Hydraulic forming press,HP-MNT-01,1.0,HP200_Maintenance_Rev1_0.pdf
+M-AC90,AC-90,Air compressor,AC-OM-01,1.0,AC90_Operations_Maintenance_Rev1_0.pdf
