@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Manage corpus</h1><p>Register machines and upload manual revisions. Uploaded PDFs are validated on the server and stored privately.</p></div>
+</div>
+{% if user.role != "ADMIN" %}
+<div class="notice notice-caution mb-4" role="note">
+  <i class="bi bi-shield-lock" aria-hidden="true"></i>
+  <div>You're signed in as <strong>{{ user.get_role_display }}</strong>. Only administrators can register machines or upload manuals; the server will refuse these forms for your account.</div>
+</div>
+{% endif %}
+
+<div class="split mb-4">
+  <section class="panel" aria-labelledby="upload-h">
+    <div class="panel-head"><h2 id="upload-h">Upload a manual</h2></div>
+    <form class="panel-body stack" id="upload-form" novalidate data-max-mb="{{ max_upload_mb }}">
+      <p class="form-text m-0">All fields are required.</p>
+      <div class="form-grid">
+        <div class="full">
+          <label class="form-label" for="u-machine">Machine</label>
+          <select class="form-select" id="u-machine" name="machine_id" required><option value="">Loading machines…</option></select>
+        </div>
+        <div>
+          <label class="form-label" for="u-document">Document ID</label>
+          <input class="form-control mono" id="u-document" name="document_id" placeholder="HP-OPS-01" required autocomplete="off" aria-describedby="u-document-help">
+          <div class="form-text" id="u-document-help">Uppercase letters, digits and hyphens.</div>
+        </div>
+        <div>
+          <label class="form-label" for="u-revision">Revision</label>
+          <input class="form-control mono" id="u-revision" name="revision" placeholder="1.0" required autocomplete="off">
+        </div>
+        <div class="full">
+          <label class="form-label" for="u-file">PDF file</label>
+          <input class="form-control" id="u-file" name="file" type="file" accept="application/pdf,.pdf" required aria-describedby="u-file-help">
+          <div class="form-text" id="u-file-help">PDF only, up to {{ max_upload_mb }} MB.</div>
+        </div>
+      </div>
+      <div class="notice notice-danger" id="upload-errors" role="alert" hidden><i class="bi bi-x-octagon" aria-hidden="true"></i><div></div></div>
+      <div id="upload-progress" hidden>
+        <div class="progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar" style="width: 0%"></div></div>
+        <div class="form-text mt-1" id="upload-progress-text">Uploading…</div>
+      </div>
+      <div><button class="btn btn-primary" type="submit" id="upload-submit"><i class="bi bi-upload" aria-hidden="true"></i> Upload and validate</button></div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="result-h">
+    <div class="panel-head"><h2 id="result-h">Result</h2></div>
+    <div class="panel-body" id="upload-result" aria-live="polite">
+      <p class="muted small-ui m-0">Details of the last upload appear here.</p>
+    </div>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="register-h">
+  <div class="panel-head"><h2 id="register-h">Register a machine</h2></div>
+  <form class="panel-body stack" id="machine-form" novalidate>
+    <p class="form-text m-0">All fields are required. The machine ID cannot be changed later.</p>
+    <div class="form-grid">
+      <div>
+        <label class="form-label" for="m-id">Machine ID</label>
+        <input class="form-control mono" id="m-id" name="machine_id" placeholder="M-HP200" required autocomplete="off">
+      </div>
+      <div>
+        <label class="form-label" for="m-model">Model</label>
+        <input class="form-control mono" id="m-model" name="model" placeholder="HP-200" required autocomplete="off">
+      </div>
+      <div class="full">
+        <label class="form-label" for="m-name">Machine name</label>
+        <input class="form-control" id="m-name" name="machine_name" placeholder="Hydraulic forming press" required autocomplete="off">
+      </div>
+    </div>
+    <div class="notice notice-danger" id="machine-errors" role="alert" hidden><i class="bi bi-x-octagon" aria-hidden="true"></i><div></div></div>
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg" aria-hidden="true"></i> Register machine</button>
+      <span class="small-ui muted">Registered:</span><span class="d-flex flex-wrap gap-2" id="registered"></span>
+    </div>
+  </form>
+</section>
+{% endblock %}

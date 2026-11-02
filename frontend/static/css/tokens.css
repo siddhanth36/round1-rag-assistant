@@ -1,0 +1,208 @@
+/* INDUSTRIX AI theme: the ONLY place colors, type, space and radii are defined (see DESIGN.md).
+   Layers: primitive (raw values) -> semantic (purpose) -> component (incl. Bootstrap --bs-* overrides).
+   Hex values are the sRGB of the OKLCH values noted alongside (hex keeps Chart.js color parsing working).
+   Loaded after bootstrap.min.css; :root[data-bs-theme="dark"] outranks Bootstrap's own dark block. */
+
+:root[data-bs-theme="dark"] {
+  color-scheme: dark;
+
+  /* ---------- primitive ---------- */
+  --p-navy-050: #090F16; /* oklch(0.165 0.018 255) */
+  --p-navy-100: #10171F; /* oklch(0.200 0.020 255) */
+  --p-navy-150: #171F28; /* oklch(0.235 0.022 255) */
+  --p-navy-200: #202833; /* oklch(0.275 0.024 255) */
+  --p-navy-300: #2E3641; /* oklch(0.330 0.022 255) */
+  --p-navy-400: #4B535F; /* oklch(0.440 0.022 255) */
+  --p-navy-500: #66707C; /* oklch(0.540 0.022 255) */
+  --p-gray-600: #9099A5; /* oklch(0.680 0.020 255) */
+  --p-gray-700: #B0B8C3; /* oklch(0.780 0.018 255) */
+  --p-gray-900: #EDF0F4; /* oklch(0.955 0.006 255) */
+  --p-blue-500: #319CFC; /* oklch(0.680 0.170 250) */
+  --p-blue-400: #58B0FF; /* oklch(0.740 0.150 250) */
+  --p-blue-300: #80C3FF; /* oklch(0.800 0.120 250) */
+  --p-blue-200: #7ECCFF; /* oklch(0.820 0.120 245) */
+  --p-blue-900: #0F253B; /* oklch(0.260 0.050 250) */
+  --p-green-400: #50D492; /* oklch(0.780 0.150 158) */
+  --p-green-900: #0C2518; /* oklch(0.240 0.040 158) */
+  --p-amber-400: #F7AC4D; /* oklch(0.800 0.140 70) */
+  --p-amber-600: #CE7616; /* oklch(0.650 0.146 60), impeccable brand seed */
+  --p-amber-900: #2B1C08; /* oklch(0.240 0.040 70) */
+  --p-red-400: #FB756E;  /* oklch(0.720 0.165 25) */
+  --p-red-900: #301715;  /* oklch(0.240 0.040 25) */
+
+  --p-font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --p-font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* ---------- semantic ---------- */
+  --color-bg: var(--p-navy-050);
+  --color-surface: var(--p-navy-100);
+  --color-surface-raised: var(--p-navy-150);
+  --color-surface-hover: var(--p-navy-200);
+  --color-divider: var(--p-navy-300);
+  --color-divider-strong: var(--p-navy-400);
+  --color-control-border: var(--p-navy-500);   /* >= 3:1 on every surface (WCAG 1.4.11) */
+  --color-text: var(--p-gray-900);
+  --color-text-muted: var(--p-gray-700);
+  --color-text-subtle: var(--p-gray-600);       /* still >= 4.5:1: used for meta + placeholders */
+  --color-accent: var(--p-blue-500);
+  --color-accent-hover: var(--p-blue-400);
+  --color-accent-bg: var(--p-blue-900);
+  --color-on-accent: var(--p-navy-050);         /* dark label on blue: 6.70:1 */
+  --color-link: var(--p-blue-300);
+  --color-focus: var(--p-blue-200);
+  --color-ok: var(--p-green-400);
+  --color-ok-bg: var(--p-green-900);
+  --color-caution: var(--p-amber-400);
+  --color-caution-line: var(--p-amber-600);
+  --color-caution-bg: var(--p-amber-900);
+  --color-danger: var(--p-red-400);
+  --color-danger-bg: var(--p-red-900);
+
+  --font-sans: var(--p-font-sans);
+  --font-mono: var(--p-font-mono);
+  --fs-xs: 0.75rem;      /* 12px: dense timestamps only */
+  --fs-sm: 0.8125rem;    /* 13px: mono tags, readouts */
+  --fs-ui: 0.875rem;     /* 14px: nav, buttons, tables */
+  --fs-body: 1rem;       /* 16px: answers, passages, inputs */
+  --fs-lg: 1.1875rem;    /* 19px: panel titles */
+  --fs-xl: 1.4375rem;    /* 23px: page titles */
+  --fs-2xl: 1.75rem;     /* 28px: login heading */
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-12: 3rem;
+
+  --radius-xs: 2px; --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.5);
+
+  --dur-1: 120ms; --dur-2: 180ms; --dur-3: 240ms;
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+
+  --z-sticky: 100; --z-dropdown: 200; --z-offcanvas: 300; --z-modal: 400; --z-toast: 500;
+
+  /* ---------- component ---------- */
+  --control-h: 2.25rem;
+  --sidebar-w: 14.5rem;
+  --topbar-h: 3.5rem;
+  --prose-max: 72ch;
+  --tag-bg: var(--color-surface-raised);
+  --tag-border: var(--color-control-border);
+  --tag-fg: var(--color-text);
+
+  /* Bootstrap: global */
+  --bs-body-bg: var(--color-bg);
+  --bs-body-bg-rgb: 9, 15, 22;
+  --bs-body-color: var(--color-text);
+  --bs-body-color-rgb: 237, 240, 244;
+  --bs-body-font-family: var(--font-sans);
+  --bs-body-font-size: var(--fs-body);
+  --bs-body-line-height: 1.6;
+  --bs-font-sans-serif: var(--font-sans);
+  --bs-font-monospace: var(--font-mono);
+  --bs-emphasis-color: var(--color-text);
+  --bs-secondary-color: var(--color-text-muted);
+  --bs-tertiary-color: var(--color-text-subtle);
+  --bs-secondary-bg: var(--color-surface-raised);
+  --bs-tertiary-bg: var(--color-surface);
+  --bs-heading-color: var(--color-text);
+  --bs-border-color: var(--color-divider);
+  --bs-border-color-translucent: var(--color-divider);
+  --bs-border-radius-sm: var(--radius-xs);
+  --bs-border-radius: var(--radius-sm);
+  --bs-border-radius-lg: var(--radius-md);
+  --bs-border-radius-xl: var(--radius-lg);
+  --bs-primary: var(--color-accent);
+  --bs-primary-rgb: 49, 156, 252;
+  --bs-link-color: var(--color-link);
+  --bs-link-color-rgb: 128, 195, 255;
+  --bs-link-hover-color: var(--color-accent-hover);
+  --bs-link-hover-color-rgb: 88, 176, 255;
+  --bs-success: var(--color-ok);
+  --bs-warning: var(--color-caution);
+  --bs-danger: var(--color-danger);
+  --bs-success-text-emphasis: var(--color-ok);
+  --bs-warning-text-emphasis: var(--color-caution);
+  --bs-danger-text-emphasis: var(--color-danger);
+  --bs-success-bg-subtle: var(--color-ok-bg);
+  --bs-warning-bg-subtle: var(--color-caution-bg);
+  --bs-danger-bg-subtle: var(--color-danger-bg);
+  --bs-focus-ring-color: var(--color-focus);
+  --bs-focus-ring-width: 2px;
+  --bs-focus-ring-opacity: 1;
+}
+
+/* Phones: no text below 14px (readouts and tags step up one notch). */
+@media (max-width: 575.98px) {
+  :root[data-bs-theme="dark"] { --fs-xs: 0.875rem; --fs-sm: 0.875rem; }
+}
+
+/* Bootstrap: component-level variables (still theme, not layout) */
+:root[data-bs-theme="dark"] .btn-primary {
+  --bs-btn-bg: var(--color-accent);
+  --bs-btn-border-color: var(--color-accent);
+  --bs-btn-color: var(--color-on-accent);
+  --bs-btn-hover-bg: var(--color-accent-hover);
+  --bs-btn-hover-border-color: var(--color-accent-hover);
+  --bs-btn-hover-color: var(--color-on-accent);
+  --bs-btn-active-bg: var(--color-accent-hover);
+  --bs-btn-active-border-color: var(--color-accent-hover);
+  --bs-btn-active-color: var(--color-on-accent);
+  --bs-btn-disabled-bg: var(--color-surface-hover);
+  --bs-btn-disabled-border-color: var(--color-divider-strong);
+  --bs-btn-disabled-color: var(--color-text-subtle);
+  --bs-btn-disabled-opacity: 1;
+}
+:root[data-bs-theme="dark"] .btn-outline-secondary {
+  --bs-btn-color: var(--color-text);
+  --bs-btn-border-color: var(--color-control-border);
+  --bs-btn-hover-bg: var(--color-surface-hover);
+  --bs-btn-hover-border-color: var(--color-text-subtle);
+  --bs-btn-hover-color: var(--color-text);
+  --bs-btn-active-bg: var(--color-surface-hover);
+  --bs-btn-active-border-color: var(--color-text-subtle);
+  --bs-btn-active-color: var(--color-text);
+}
+:root[data-bs-theme="dark"] .btn-outline-danger {
+  --bs-btn-color: var(--color-danger);
+  --bs-btn-border-color: var(--color-danger);
+  --bs-btn-hover-bg: var(--color-danger-bg);
+  --bs-btn-hover-color: var(--color-danger);
+  --bs-btn-hover-border-color: var(--color-danger);
+  --bs-btn-active-bg: var(--color-danger-bg);
+  --bs-btn-active-color: var(--color-danger);
+}
+:root[data-bs-theme="dark"] .btn {
+  --bs-btn-font-size: var(--fs-ui);
+  --bs-btn-font-weight: 500;
+  --bs-btn-padding-y: 0.4375rem;
+  --bs-btn-padding-x: 0.875rem;
+  --bs-btn-focus-box-shadow: none; /* focus is drawn by the shared :focus-visible outline (app.css) */
+}
+:root[data-bs-theme="dark"] .form-control,
+:root[data-bs-theme="dark"] .form-select {
+  background-color: var(--color-surface-raised);
+  border-color: var(--color-control-border);
+  color: var(--color-text);
+}
+:root[data-bs-theme="dark"] .form-control::placeholder { color: var(--color-text-subtle); opacity: 1; }
+:root[data-bs-theme="dark"] .form-control:focus,
+:root[data-bs-theme="dark"] .form-select:focus { box-shadow: none; border-color: var(--color-focus); }
+:root[data-bs-theme="dark"] .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--color-text);
+  --bs-table-border-color: var(--color-divider);
+  --bs-table-hover-bg: var(--color-surface-hover);
+  --bs-table-hover-color: var(--color-text);
+}
+:root[data-bs-theme="dark"] .toast {
+  --bs-toast-bg: var(--color-surface-raised);
+  --bs-toast-color: var(--color-text);
+  --bs-toast-border-color: var(--color-divider-strong);
+  --bs-toast-header-bg: var(--color-surface-raised);
+  --bs-toast-header-color: var(--color-text);
+  --bs-toast-zindex: var(--z-toast);
+}
+:root[data-bs-theme="dark"] .offcanvas {
+  --bs-offcanvas-bg: var(--color-surface-raised);
+  --bs-offcanvas-width: var(--sidebar-w);
+  --bs-offcanvas-zindex: var(--z-offcanvas);
+}

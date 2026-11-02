@@ -63,7 +63,7 @@ WSGI_APPLICATION = "backend.config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],  # frontend/templates is added with the frontend step
+        "DIRS": [BASE_DIR / "frontend" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -86,7 +86,9 @@ AUTH_PASSWORD_VALIDATORS = [
 TIME_ZONE = "UTC"  # USE_TZ is on by default: timestamps stored as UTC
 
 STATIC_URL = "static/"
-# ponytail: STATICFILES_DIRS / STATIC_ROOT are added with the frontend/ step (no static files exist yet).
+STATICFILES_DIRS = [BASE_DIR / "frontend" / "static"]
+# ponytail: no STATIC_ROOT/collectstatic: the demo runs on runserver with DEBUG=True. Add both for a real deployment.
+LOGIN_URL = "/login/"
 
 # Uploaded manuals. Never routed under a public URL: PDFs are served only by an authenticated view.
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", "").strip() or BASE_DIR / "media")

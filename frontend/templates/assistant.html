@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="assistant">
+  <div id="context" class="context-chip" aria-label="Selected machine and manuals in scope">
+    <div class="skeleton w-100" aria-hidden="true"><span></span></div>
+  </div>
+
+  <section aria-labelledby="thread-h">
+    <h1 id="thread-h" class="visually-hidden">Assistant</h1>
+    <div id="thread" class="thread"></div>
+  </section>
+
+  <form id="composer" class="composer" novalidate hidden>
+    <label class="form-label" for="question">Question</label>
+    <div class="composer-box">
+      <textarea class="form-control" id="question" name="question" rows="2" maxlength="1000" aria-describedby="question-help question-count question-error" required></textarea>
+      <button class="btn btn-primary" type="submit" id="ask"><i class="bi bi-send" aria-hidden="true"></i> Ask</button>
+    </div>
+    <div class="field-error" id="question-error" role="alert" hidden></div>
+    <div class="composer-meta">
+      <span id="question-help">Enter to ask · Shift+Enter for a new line · Each question is answered independently.</span>
+      <span id="question-count" class="readout" aria-live="off">0 / 1000</span>
+    </div>
+  </form>
+  <div id="announce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+</div>
+{% endblock %}

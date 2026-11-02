@@ -1,0 +1,18 @@
+{# Role-aware navigation. Hiding a link is UX only: every API enforces its own permission. #}
+{% with role=user.role %}
+<ul class="nav-list">
+  <li><a class="nav-item-link" href="/" {% if page == "dashboard" %}aria-current="page"{% endif %}><i class="bi bi-grid-1x2" aria-hidden="true"></i>Dashboard</a></li>
+  <li><a class="nav-item-link" href="/machines/" {% if page == "machines" %}aria-current="page"{% endif %}><i class="bi bi-gear-wide-connected" aria-hidden="true"></i>Machines</a></li>
+  {% if role == "ENGINEER" %}
+  <li><a class="nav-item-link" href="/assistant/" {% if page == "assistant" %}aria-current="page"{% endif %}><i class="bi bi-chat-square-text" aria-hidden="true"></i>Assistant</a></li>
+  <li><a class="nav-item-link" href="/history/" {% if page == "history" %}aria-current="page"{% endif %}><i class="bi bi-clock-history" aria-hidden="true"></i>History</a></li>
+  {% endif %}
+  <li><a class="nav-item-link" href="/manuals/" {% if page == "manuals" %}aria-current="page"{% endif %}><i class="bi bi-journal-text" aria-hidden="true"></i>Manuals</a></li>
+  {% if role == "ADMIN" %}
+  <li><a class="nav-item-link" href="/manage/" {% if page == "manage" %}aria-current="page"{% endif %}><i class="bi bi-upload" aria-hidden="true"></i>Manage corpus</a></li>
+  {% endif %}
+  {% if role == "SUPERVISOR" or role == "ADMIN" %}
+  <li><a class="nav-item-link" href="/analytics/" {% if page == "analytics" %}aria-current="page"{% endif %}><i class="bi bi-clipboard-data" aria-hidden="true"></i>Analytics</a></li>
+  {% endif %}
+</ul>
+{% endwith %}

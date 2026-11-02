@@ -1,0 +1,49 @@
+{% load static %}<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  {% include "_head.html" %}
+  <title>{{ title }} · INDUSTRIX AI</title>
+</head>
+<body data-role="{{ user.role }}" data-username="{{ user.username }}">
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="app">
+    <aside class="sidebar sidebar-desktop" aria-label="Primary">
+      <div class="sidebar-inner">
+        <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">IX</span>INDUSTRIX AI</a>
+        <nav aria-label="Main navigation">{% include "_nav.html" %}</nav>
+        <div class="sidebar-foot readout">Round 1 build</div>
+      </div>
+    </aside>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobile-nav" aria-labelledby="mobile-nav-title">
+      <div class="offcanvas-header">
+        <span class="brand p-0 border-0" id="mobile-nav-title"><span class="brand-mark" aria-hidden="true">IX</span>INDUSTRIX AI</span>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
+      </div>
+      <nav class="offcanvas-body p-0" aria-label="Main navigation">{% include "_nav.html" %}</nav>
+    </div>
+
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="btn btn-outline-secondary btn-sm menu-btn" data-bs-toggle="offcanvas" data-bs-target="#mobile-nav" aria-controls="mobile-nav" aria-label="Open navigation">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+        <p class="topbar-title">{{ title }}</p>
+        <div class="topbar-user">
+          <span class="d-none d-sm-inline">{{ user.username }}</span>
+          <span class="role-label">{{ user.get_role_display }}</span>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="d-none d-md-inline"> Sign out</span><span class="visually-hidden d-md-none">Sign out</span></button>
+        </div>
+      </header>
+      <main id="main" class="content" tabindex="-1">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <div class="toast-stack" id="toasts"></div>{# each toast carries role=status/alert itself #}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous" defer></script>
+  <script type="module" src="{% static 'js/shell.js' %}"></script>
+  {% block scripts %}<script type="module" src="{% static 'js/' %}{{ page }}.js"></script>{% endblock %}
+</body>
+</html>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from backend.accounts import views as accounts
 from backend.assistant import views as assistant
@@ -20,4 +20,5 @@ urlpatterns = [
     path("api/history/", assistant.History.as_view()),
     path("api/supervisor/questions/", assistant.SupervisorQuestions.as_view()),
     path("api/supervisor/analytics/", assistant.analytics),
+    path("", include("backend.config.pages")),
 ]

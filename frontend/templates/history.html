@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <div><h1>History</h1><p>Your questions and the answers stored for them. Open a row to see the answer and its sources.</p></div>
+</div>
+<section class="panel" aria-labelledby="history-h">
+  <div class="panel-head flex-wrap">
+    <h2 id="history-h">Your questions</h2>
+    <form class="filters" id="filters">
+      <div>
+        <label class="form-label" for="f-machine">Machine</label>
+        <select class="form-select form-select-sm" id="f-machine" name="machine"><option value="">All machines</option></select>
+      </div>
+      <div>
+        <label class="form-label" for="f-status">Outcome</label>
+        <select class="form-select form-select-sm" id="f-status" name="status">
+          <option value="">All outcomes</option>
+          <option value="answered">Answered</option>
+          <option value="insufficient_evidence">Not in the manuals</option>
+          <option value="error">Couldn't answer</option>
+          <option value="unanswered">All unanswered</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div id="history" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</section>
+{% endblock %}
