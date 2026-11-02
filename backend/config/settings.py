@@ -95,6 +95,9 @@ LOGIN_URL = "/login/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", "").strip() or BASE_DIR / "media")
 MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "20"))
 
+# Round 2 pack folder holding the supplied, unmodified Model/inference.py + classifier.npz.
+INSPECTION_MODEL_DIR = Path(os.environ.get("INSPECTION_MODEL_DIR", "").strip() or BASE_DIR / "challenge-pack-r2" / "Model")
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["backend.accounts.authentication.SessionAuthentication401"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],

@@ -3,6 +3,7 @@ from django.urls import include, path
 
 from backend.accounts import views as accounts
 from backend.assistant import views as assistant
+from backend.inspections import views as inspections
 from backend.machines import views as machines
 
 urlpatterns = [
@@ -21,5 +22,10 @@ urlpatterns = [
     path("api/history/", assistant.History.as_view()),
     path("api/supervisor/questions/", assistant.SupervisorQuestions.as_view()),
     path("api/supervisor/analytics/", assistant.analytics),
+    path("api/products/", inspections.ProductList.as_view()),
+    path("api/products/<str:product_id>/", inspections.ProductDetail.as_view()),
+    path("api/inspections/", inspections.create_inspection),
+    path("api/inspections/<int:pk>/", inspections.InspectionDetail.as_view()),
+    path("api/inspections/<int:pk>/image/", inspections.inspection_image),
     path("", include("backend.config.pages")),
 ]
