@@ -10,7 +10,7 @@ revision, original PDF page, supporting passage). Requirements come from
 | Part | Branch | Status |
 |---|---|---|
 | RAG engine (`rag/`): PDF extraction, chunking, embeddings, ChromaDB, machine-filtered retrieval, revisions, grounded answering, citation validation | `feature/rag-engine` | Implemented; 233 automated tests |
-| LLM provider | — | **Pending**: no provider approved yet; answers return `provider_unavailable` until one is configured |
+| LLM provider | `feature/rag-engine` | Groq adapter (`LLM_PROVIDER=groq`, `GROQ_API_KEY`); unit-tested with a mocked SDK |
 | Django + DRF backend, auth/roles, PostgreSQL models, Bootstrap UI | `feature/django-product` | Not started on that branch |
 
 ## Required technologies
@@ -25,7 +25,7 @@ Mandated by the challenge brief (do not replace): see `docs/TECH_STACK.md` for v
 | PDF extraction | PyMuPDF |
 | Embeddings | Sentence Transformers `all-MiniLM-L6-v2` |
 | Vector store | ChromaDB (persistent, local) |
-| Answer generation | External LLM API, configured by environment variables (provider pending) |
+| Answer generation | Groq API (official `groq` SDK), configured by environment variables |
 
 ## Repository layout
 
@@ -81,7 +81,12 @@ python -m rag.evaluation          # 13-question retrieval evaluation on the supp
 ## Configuration
 
 All settings are environment variables with safe defaults; see `.env.example`. The vector index is stored in
-`chroma_db/` (git-ignored, rebuildable from the PDFs). LLM settings: `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY`.
+`chroma_db/` (git-ignored, rebuildable from the PDFs).
+
+LLM (Groq): copy `.env.example` to `.env` and set `GROQ_API_KEY` there (never commit it). `rag/config.py`
+loads the project-root `.env` automatically; variables already set in the shell take precedence.
+`GROQ_MODEL` defaults to `llama-3.3-70b-versatile`. Unit tests mock the Groq SDK and need no key; a live
+smoke test is in `docs/PROJECT_ARCHITECTURE.md`.
 
 ## Documentation
 

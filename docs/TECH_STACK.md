@@ -71,16 +71,16 @@ Legend — **Source**: *Brief* = explicitly required by `Round1_Student_Challeng
 - **Used as:** derived index; rebuildable from the PDFs.
 
 ## LLM API
-- **Layer:** RAG generation. **Status:** provider-independent pipeline **implemented and tested with fake LLMs**;
-  **real provider pending** — no provider has been approved and no credentials exist (the brief: model access
-  is "announced separately"). No real LLM call has been made or tested.
+- **Layer:** RAG generation. **Provider: Groq** via the official `groq` SDK (installed 1.7.0, `groq>=1.7,<2`).
+  **Status:** adapter implemented and unit-tested with the SDK mocked; no live Groq call is part of the test suite.
 - **Why:** brief requires an LLM; no training.
 - **Interface:** `rag/generation/llm_client.py` — `LLMClient` protocol (`model_name`,
   `complete(*, system_prompt, user_prompt) -> str`) and `create_llm_client()` (returns `None` when
-  `LLM_PROVIDER` is empty). No concrete adapter and no provider SDK are installed; adding one is a single
-  class registered in `_ADAPTERS`, plus that provider's official SDK (or the standard library for HTTP).
-- **Configuration:** `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY` (environment only; excluded from `repr`),
-  `LLM_TIMEOUT_SECONDS` (default 30). Adapters should request temperature 0.
+  `LLM_PROVIDER` is empty); `GroqClient` is registered as `groq`. Another provider = one more class in `_ADAPTERS`.
+- **Configuration:** `LLM_PROVIDER=groq`, `GROQ_API_KEY` (environment only; excluded from `repr`, redacted from
+  errors), `GROQ_MODEL` (default `llama-3.3-70b-versatile`; listed as a Groq production model when checked —
+  confirm your account can use it), `LLM_TIMEOUT_SECONDS` (default 30). Temperature 0, JSON mode.
+  Setup and a live smoke test: `docs/PROJECT_ARCHITECTURE.md`, "Local setup and testing (Groq)".
 - **Constraints enforced in code:** the LLM receives only the selected machine's retrieved, current-revision
   passages tagged `S1..Sn`; its JSON reply is parsed and validated server-side (tags must belong to this
   request, numbers/codes/identifiers/pages/documents must be supported by the cited passages); citation
@@ -102,7 +102,8 @@ Installed in `.venv/` (never globally) and declared in `rag/requirements.txt` / 
 | chromadb | `>=1.5.9,<2` | 1.5.9 | in use |
 | pytest (dev) | `>=8,<10` | 9.2.0 | in use |
 | Django, djangorestframework, psycopg / mysqlclient | — | — | not installed yet (Django phase) |
-| LLM provider SDK | — | — | none: provider not yet approved |
+| groq | `>=1.7,<2` | 1.7.0 | in use (Groq adapter) |
+| python-dotenv | `>=1.2,<2` | 1.2.4 | in use (loads local `.env`) |
 
 Install order (CPU torch first):
 ```bash

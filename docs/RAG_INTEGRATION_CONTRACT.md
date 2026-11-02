@@ -2,8 +2,8 @@
 
 Owner: Developer A (`feature/rag-engine`). Consumer: Developer B (`feature/django-product`).
 Status: **implemented and tested** on the RAG side (contract tests: `rag/tests/test_public_interface.py`).
-The LLM provider is **pending** (no provider approved); until one is configured, answers with evidence return
-`provider_unavailable`.
+The LLM provider is **Groq** (`LLM_PROVIDER=groq`, `GROQ_API_KEY`, optional `GROQ_MODEL`). With `LLM_PROVIDER`
+empty, `create_llm_client()` returns `None` and answers with evidence return `provider_unavailable`.
 
 Signatures below were read from the code, not from earlier design notes. If a contract test has to change,
 this document changes with it and Developer B is told.
@@ -132,7 +132,7 @@ that `document_id` + `revision` (verify `manual.machine == question.machine` bef
 | `EmbeddingModelError` | — | `get_embedder`, embedding | `FAILED` (model missing/offline) |
 | `VectorStoreError` | — | store open/write/search; `answer_question` propagates it | `Question`/`Manual` `FAILED`, 502 |
 | `RevisionNotFoundError` | `VectorStoreError`, `LookupError` | `set_current_revision` (nothing changed) | 404/400 to admin |
-| `ConfigError` | `ValueError` | config loaders, `create_llm_client` (unknown provider) | fail fast at startup |
+| `ConfigError` | `ValueError` | config loaders, `create_llm_client` (unknown provider, `groq` without `GROQ_API_KEY`) | fail fast at startup |
 
 `LLMProviderError` and `MalformedLLMResponseError` are handled inside `answer_question` (→ `generation_error`)
 and never reach Django.

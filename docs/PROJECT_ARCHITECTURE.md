@@ -61,7 +61,7 @@ rag/
 ├── vectorstore/
 │   └── chroma_store.py    # ChromaVectorStore: index/remove/set_current_revision/search [implemented]
 ├── generation/
-│   ├── llm_client.py      # LLMClient protocol + create_llm_client() factory  [implemented; no provider adapter yet]
+│   ├── llm_client.py      # LLMClient protocol, GroqClient adapter, create_llm_client()      [implemented]
 │   ├── prompts.py         # system prompt, tagged-evidence user prompt, correction prompt   [implemented]
 │   ├── citation_validator.py # parse LLM JSON, validate tags/claims against evidence     [implemented]
 │   └── answer_service.py  # answer_question(): retrieval -> abstention -> LLM -> validation [implemented]
@@ -106,19 +106,39 @@ Operations (`ChromaVectorStore`):
 | `set_current_revision(machine_id=, document_id=, revision=)` | Demotes other revisions of that machine+document first, then promotes the target (never two current revisions; briefly possibly none). Unknown target → `RevisionNotFoundError`, nothing changed. Returns flags changed. |
 | `search(query, machine_id=, limit=8)` | Rejects empty `machine_id`/query and `limit` outside 1–50. Calls `collection.query(where={"$and": [{"machine_id": m}, {"is_current": True}]})`, so the filter is applied **inside** the search. Returns `SearchResult`s with full metadata and raw `cosine_distance` (lower = closer; a ranking signal, **not** a calibrated confidence). A post-check raises if any result had another machine id (defence in depth only). |
 
-### Answer generation (implemented and tested with fake LLMs; real provider pending)
+### Answer generation (implemented; Groq adapter tested with a mocked SDK)
 
 **Status.** The pipeline, prompt, citation validation and abstention are implemented and covered by
-deterministic tests with fake LLMs. **No real LLM has been called**: no provider has been approved
-(the brief says model access is announced separately) and no credentials exist, so
-`create_llm_client()` returns `None` and `answer_question` returns `provider_unavailable` whenever
-evidence exists.
+deterministic tests with fake LLMs. The provider is **Groq** (`GroqClient` in
+`rag/generation/llm_client.py`, official `groq` SDK). Its tests mock the SDK; a live Groq call has not been
+run in this repository's test suite (it needs a real key — use the smoke test below).
 
-**Provider configuration.** `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY` (never committed; excluded from
-`repr`), `LLM_TIMEOUT_SECONDS`. Empty `LLM_PROVIDER` = no provider. To activate one, implement a class with
-`model_name` and `complete(*, system_prompt, user_prompt) -> str` that raises `LLMProviderError` (no secrets
-in messages) and register it in `rag/generation/llm_client.py::_ADAPTERS`. No adapter is included because
-the provider's interface is not known yet.
+**Provider configuration.** `LLM_PROVIDER=groq`, `GROQ_API_KEY` (required; environment only, excluded from
+`repr`, redacted from error messages), `GROQ_MODEL` (default `llama-3.3-70b-versatile`, listed as a Groq
+production model when checked; if your account cannot use it, set e.g. `GROQ_MODEL=llama-3.1-8b-instant`),
+`LLM_TIMEOUT_SECONDS` (default 30). Empty `LLM_PROVIDER` = no provider (`provider_unavailable`); another value
+→ `ConfigError`; `groq` without a key → `ConfigError`. Requests use temperature 0 and Groq JSON mode
+(`response_format={"type": "json_object"}`); the SDK retries 429/5xx twice. Any `groq.APIError` becomes
+`LLMProviderError` ("Groq <ErrorClass> (HTTP n): message", key redacted, SDK exception not chained), which
+`answer_question` returns as `generation_error`. Groq returns text only; tags are resolved through the
+server-side source map, so citation metadata never comes from the model.
+
+**Local setup and testing (Groq).**
+```bash
+cp .env.example .env                  # once; .env is git-ignored
+# edit .env in an editor: GROQ_API_KEY=<your key>  (never commit it, never paste it into code, docs or chat)
+# rag/config.py loads <project root>/.env automatically at import (real environment variables win)
+python -m pytest rag/tests -q         # unit tests mock the SDK: no network, no key needed
+python - <<'PY'                       # optional live smoke test (uses your quota)
+import tempfile; from pathlib import Path
+from rag.evaluation import build_index
+from rag.generation.answer_service import answer_question
+from rag.generation.llm_client import create_llm_client
+with tempfile.TemporaryDirectory() as d:
+    r = answer_question("What does E17 mean?", "M-HP200", store=build_index(Path(d)), llm=create_llm_client())
+    print(r.status, r.answer, [(c.document_id, c.pdf_page) for c in r.citations], r.rejection_reasons, r.error)
+PY
+```
 
 **Prompt architecture** (`rag/generation/prompts.py`). The system prompt restricts the LLM to the supplied
 passages, forbids outside knowledge and invented values/procedures/IDs/pages, states that codes are
@@ -342,7 +362,7 @@ Single host (developer laptop / lab machine):
 | LLM | External HTTPS API; key in env var |
 
 Environment variables (values never committed):
-- RAG engine (implemented, see `.env.example`): `RAG_CHUNK_SIZE_WORDS`, `RAG_CHUNK_OVERLAP_WORDS`, `EMBEDDING_MODEL`, `EMBEDDING_DEVICE`, `EMBEDDING_BATCH_SIZE`, `EMBEDDING_CACHE_DIR`, `CHROMA_DIR`, `CHROMA_COLLECTION`, `RAG_TOP_K`, `RAG_MAX_DISTANCE`, `RAG_MAX_CORRECTIONS`, `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_TIMEOUT_SECONDS`.
+- RAG engine (implemented, see `.env.example`): `RAG_CHUNK_SIZE_WORDS`, `RAG_CHUNK_OVERLAP_WORDS`, `EMBEDDING_MODEL`, `EMBEDDING_DEVICE`, `EMBEDDING_BATCH_SIZE`, `EMBEDDING_CACHE_DIR`, `CHROMA_DIR`, `CHROMA_COLLECTION`, `RAG_TOP_K`, `RAG_MAX_DISTANCE`, `RAG_MAX_CORRECTIONS`, `LLM_PROVIDER`, `GROQ_API_KEY`, `GROQ_MODEL`, `LLM_TIMEOUT_SECONDS`.
 - Django (proposed, not implemented): `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DB_ENGINE`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`.
 
 ## 10. Architectural decisions & trade-offs

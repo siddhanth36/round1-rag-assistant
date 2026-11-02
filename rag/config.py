@@ -1,7 +1,9 @@
 """RAG configuration read from environment variables.
 
-Every setting has a safe default, so nothing is required to run locally. No secrets are
-read yet; future secrets (e.g. ``LLM_API_KEY``) must also come from the environment only.
+Every setting has a safe default, so nothing is required to run locally. Values come from the
+process environment, plus the project's local ``.env`` file (git-ignored), loaded once at import;
+variables already set in the environment win. The only secret is ``GROQ_API_KEY``; it is never
+logged and is excluded from ``LLMConfig.__repr__``.
 """
 
 from __future__ import annotations
@@ -9,6 +11,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 from rag.exceptions import ChunkingConfigError, ConfigError
 
@@ -101,6 +105,16 @@ def load_embedding_config() -> EmbeddingConfig:
 # Project root (parent of the rag/ package). The default store lives in <root>/chroma_db/,
 # outside the source packages and git-ignored.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_env_file(path: Path | None = None) -> bool:
+    """Load ``KEY=VALUE`` lines from the local ``.env`` (default ``<project root>/.env``) into
+    ``os.environ`` without overriding variables that are already set. Missing file = no-op.
+    ``interpolate=False`` so secrets containing ``$`` are taken literally. Nothing is logged."""
+    return load_dotenv(path or PROJECT_ROOT / ".env", override=False, interpolate=False)
+
+
+load_env_file()
 DEFAULT_CHROMA_DIR = PROJECT_ROOT / "chroma_db"
 DEFAULT_CHROMA_COLLECTION = "manual_chunks"
 
@@ -145,12 +159,15 @@ class LLMConfig:
             raise ConfigError(f"LLM timeout must be >= 1 second, got {self.timeout_seconds}")
 
 
+DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+
+
 def load_llm_config() -> LLMConfig:
-    """Build an LLMConfig from ``LLM_PROVIDER``, ``LLM_MODEL``, ``LLM_API_KEY``, ``LLM_TIMEOUT_SECONDS``."""
+    """Build an LLMConfig from ``LLM_PROVIDER``, ``GROQ_MODEL``, ``GROQ_API_KEY``, ``LLM_TIMEOUT_SECONDS``."""
     return LLMConfig(
         provider=_env_str("LLM_PROVIDER", "").lower(),
-        model=_env_str("LLM_MODEL", ""),
-        api_key=os.environ.get("LLM_API_KEY", "").strip(),
+        model=_env_str("GROQ_MODEL", DEFAULT_GROQ_MODEL),
+        api_key=os.environ.get("GROQ_API_KEY", "").strip(),
         timeout_seconds=_env_int("LLM_TIMEOUT_SECONDS", 30),
     )
 

@@ -1,7 +1,7 @@
 # Runtime dependencies of the rag/ package.
 # Tested together on Python 3.13.14 (Kali Linux, CPU):
 #   pymupdf 1.28.2, torch 2.15.0+cpu, sentence-transformers 6.2.0, transformers 5.22.1,
-#   chromadb 1.5.9, numpy 2.5.4
+#   chromadb 1.5.9, numpy 2.5.4, groq 1.7.0, python-dotenv 1.2.4
 #
 # Install torch FIRST from the official CPU-only index (avoids several GB of CUDA libraries;
 # all-MiniLM-L6-v2 is small and runs fine on CPU):
@@ -18,3 +18,9 @@ sentence-transformers>=6.2,<7
 
 # Persistent vector store.
 chromadb>=1.5.9,<2
+
+# LLM provider (official Groq SDK).
+groq>=1.7,<2
+
+# Loads the local, git-ignored .env (GROQ_API_KEY etc.) into the environment.
+python-dotenv>=1.2,<2

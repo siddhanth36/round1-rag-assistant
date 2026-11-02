@@ -38,21 +38,21 @@ def test_registered_adapter_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_provider_without_model_is_a_config_error(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(llm_client._ADAPTERS, "test", lambda config: object())
-    with pytest.raises(ConfigError, match="LLM_MODEL"):
+    with pytest.raises(ConfigError, match="GROQ_MODEL"):
         create_llm_client(LLMConfig(provider="test"))
 
 
 def test_api_key_is_never_in_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LLM_PROVIDER", " SomeProvider ")
-    monkeypatch.setenv("LLM_MODEL", "model-x")
-    monkeypatch.setenv("LLM_API_KEY", "sk-test-not-a-real-key")
+    monkeypatch.setenv("GROQ_MODEL", "model-x")
+    monkeypatch.setenv("GROQ_API_KEY", "sk-test-not-a-real-key")
     config = load_llm_config()
     assert (config.provider, config.model, config.api_key) == ("someprovider", "model-x", "sk-test-not-a-real-key")
     assert "sk-test" not in repr(config)
 
 
 def test_unset_environment_means_no_provider(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("LLM_PROVIDER", "LLM_MODEL", "LLM_API_KEY", "LLM_TIMEOUT_SECONDS"):
+    for name in ("LLM_PROVIDER", "GROQ_MODEL", "GROQ_API_KEY", "LLM_TIMEOUT_SECONDS"):
         monkeypatch.delenv(name, raising=False)
     assert create_llm_client() is None
 
