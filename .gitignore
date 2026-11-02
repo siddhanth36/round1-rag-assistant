@@ -40,3 +40,13 @@ logs/
 challenge-pack/*
 !challenge-pack/Manuals/
 !challenge-pack/machine_manual_index.csv
+
+# --- Round 2 pack: commit only what the app and tests read, byte-identical to the pack ---
+# Model/ is loaded unchanged by backend/inspections/ai_adapter.py; Samples/ feed evaluate_samples;
+# Validation/ feeds the invalid-upload tests. Brief, guide and START_HERE stay local.
+challenge-pack-r2/*
+!challenge-pack-r2/Model/
+!challenge-pack-r2/Samples/
+!challenge-pack-r2/Validation/
+!challenge-pack-r2/product_details.csv
+!challenge-pack-r2/SHA256SUMS.txt

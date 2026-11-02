@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "backend.accounts",
     "backend.machines",
     "backend.assistant",
+    "backend.inspections",
 ]
 
 MIDDLEWARE = [

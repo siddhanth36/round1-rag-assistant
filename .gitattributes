@@ -1,0 +1,2 @@
+# Round 2 pack files are stored byte-for-byte: SHA256SUMS.txt (CRLF text files included) must keep matching.
+challenge-pack-r2/** -text
