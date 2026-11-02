@@ -3,6 +3,7 @@
 <head>
   {% include "_head.html" %}
   <title>{{ title }} · INDUSTRIX AI</title>
+  {% block head %}{% endblock %}
 </head>
 <body data-role="{{ user.role }}" data-username="{{ user.username }}">
   <a class="skip-link" href="#main">Skip to main content</a>

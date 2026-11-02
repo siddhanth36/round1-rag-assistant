@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/inspections.css' %}">{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Model metrics</h1>
+    <p>How the supplied model scored on the supplied labeled samples, measured on the server through the same validation and model path as uploads.</p>
+  </div>
+</div>
+
+<div class="notice notice-caution mb-4" role="note"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+  <div><strong>Read these numbers as a smoke test, not a reliability claim.</strong> The evaluation uses 60 synthetic samples with fixed framing.
+    A sample this small, this uniform, says nothing about real products, real lighting or unfamiliar defects.</div>
+</div>
+
+<div id="metrics" aria-busy="true">
+  <div class="panel"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</div>
+{% endblock %}
