@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/inspections.css' %}">{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{% if user.role == "ENGINEER" %}My inspection history{% else %}Inspection history{% endif %}</h1>
+    <p>{% if user.role == "ENGINEER" %}Inspections you submitted, newest first.{% else %}Every inspection, newest first.{% endif %} Open a row to see the image, the model's prediction and its reviews.</p>
+  </div>
+</div>
+<section class="panel" aria-labelledby="history-h">
+  <div class="panel-head flex-wrap">
+    <h2 id="history-h">Inspections</h2>
+    <form class="filters" id="filters">
+      <div>
+        <label class="form-label" for="f-prediction">Prediction</label>
+        <select class="form-select form-select-sm" id="f-prediction" name="prediction">
+          <option value="">All predictions</option><option value="Normal">Normal</option><option value="Defective">Defective</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="f-review">Review</label>
+        <select class="form-select form-select-sm" id="f-review" name="review_status">
+          <option value="">All reviews</option><option value="unreviewed">Unreviewed</option><option value="confirmed">Confirmed</option><option value="corrected">Corrected</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="f-status">Processing</label>
+        <select class="form-select form-select-sm" id="f-status" name="status">
+          <option value="">All statuses</option><option value="queued">Queued</option><option value="processing">Processing</option><option value="completed">Completed</option><option value="failed">Failed</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="f-product">Product</label>
+        <select class="form-select form-select-sm" id="f-product" name="product"><option value="">All products</option></select>
+      </div>
+      <div>
+        <label class="form-label" for="f-from">From</label>
+        <input class="form-control form-control-sm" type="date" id="f-from" name="from">
+      </div>
+      <div>
+        <label class="form-label" for="f-to">To</label>
+        <input class="form-control form-control-sm" type="date" id="f-to" name="to">
+      </div>
+      <div><button class="btn btn-outline-secondary btn-sm" type="reset" id="f-reset">Reset</button></div>
+    </form>
+  </div>
+  <div id="history" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</section>
+{% endblock %}

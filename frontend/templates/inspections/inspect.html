@@ -1,14 +1,64 @@
 {% extends "base.html" %}
-{# Example stub for the Round 2 page pattern. The frontend teammate owns this file and builds the real screen. #}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/inspections.css' %}">{% endblock %}
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Inspect</h1>
-    <p>Upload a JPEG or PNG of a supported product to get the model's prediction and confidence.</p>
+    <h1>Inspect a product image</h1>
+    <p>Upload one JPEG or PNG of a supported product. The model classifies it as Normal or Defective, and the result is saved to inspection history.</p>
   </div>
+  <a class="btn btn-outline-secondary btn-sm" href="/inspect/batch/"><i class="bi bi-images" aria-hidden="true"></i> Inspect a batch</a>
 </div>
-<section class="panel" aria-labelledby="products-h">
-  <div class="panel-head"><h2 id="products-h">Products</h2></div>
-  <div id="products" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span></div></div></div>
-</section>
+
+{% if user.role == "SUPERVISOR" %}
+<div class="notice mb-4"><i class="bi bi-info-circle" aria-hidden="true"></i>
+  <div>Supervisors review inspections; submitting images is for Engineers and Administrators, and the server will refuse a submission from this account. Review results from <a href="/inspections/">Inspection history</a>.</div>
+</div>
+{% endif %}
+
+<div class="split">
+  <section class="panel" aria-labelledby="upload-h">
+    <div class="panel-head"><h2 id="upload-h">Image</h2></div>
+    <form class="panel-body stack" id="inspect-form" novalidate>
+      <div>
+        <label class="form-label" for="product">Product</label>
+        <select class="form-select" id="product" name="product_id" required><option value="">Loading products…</option></select>
+      </div>
+
+      <div>
+        <span class="form-label d-block" id="image-label">Image file</span>
+        <label class="drop" id="drop" for="image">
+          <input class="visually-hidden" id="image" name="image" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" aria-labelledby="image-label" aria-describedby="image-help">
+          <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+          <span><strong>Choose an image</strong> or drop it here</span>
+          <span class="form-text" id="image-help">JPEG or PNG · up to 5 MiB · each side 64–4096 px</span>
+        </label>
+      </div>
+
+      <figure class="preview" id="preview" hidden>
+        <img id="preview-img" alt="Preview of the selected image">
+        <figcaption class="file-meta" id="file-meta"></figcaption>
+      </figure>
+
+      <div id="form-errors" hidden></div>
+
+      <div id="progress" hidden>
+        <div class="progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar" style="width: 0%"></div></div>
+        <div class="form-text mt-1" id="progress-text">Uploading…</div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary" type="submit" id="submit"><i class="bi bi-cpu" aria-hidden="true"></i> Upload and inspect</button>
+        <button class="btn btn-outline-secondary" type="button" id="clear" hidden>Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="result-h">
+    <div class="panel-head"><h2 id="result-h">Result</h2></div>
+    <div class="panel-body" id="result" aria-live="polite">
+      <p class="muted small-ui m-0">The prediction for the uploaded image appears here.</p>
+    </div>
+  </section>
+</div>
 {% endblock %}

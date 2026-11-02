@@ -14,5 +14,12 @@
   {% if role == "SUPERVISOR" or role == "ADMIN" %}
   <li><a class="nav-item-link" href="/analytics/" {% if page == "analytics" %}aria-current="page"{% endif %}><i class="bi bi-clipboard-data" aria-hidden="true"></i>Analytics</a></li>
   {% endif %}
+  {# Round 2: visual inspection #}
+  <li><a class="nav-item-link" href="/inspect/" {% if page == "inspect" %}aria-current="page"{% endif %}><i class="bi bi-camera" aria-hidden="true"></i>Inspection</a></li>
+  <li><a class="nav-item-link" href="/inspect/batch/" {% if page == "inspect-batch" %}aria-current="page"{% endif %}><i class="bi bi-images" aria-hidden="true"></i>Batch</a></li>
+  <li><a class="nav-item-link" href="/inspections/" {% if page == "inspect-history" or page == "inspect-detail" %}aria-current="page"{% endif %}><i class="bi bi-card-checklist" aria-hidden="true"></i>{% if role == "ENGINEER" %}My inspection history{% else %}Inspection history{% endif %}</a></li>
+  {% if role == "SUPERVISOR" or role == "ADMIN" %}
+  <li><a class="nav-item-link" href="/inspections/metrics/" {% if page == "inspect-metrics" %}aria-current="page"{% endif %}><i class="bi bi-grid-3x3" aria-hidden="true"></i>Model metrics</a></li>
+  {% endif %}
 </ul>
 {% endwith %}

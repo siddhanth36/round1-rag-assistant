@@ -12,6 +12,10 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 # url, template (frontend/templates/inspections/<name>.html), page title, script (frontend/static/js/<script>.js)
 PAGES = [
     ("inspect/", "inspect", "Inspect", "inspect"),
+    ("inspect/batch/", "batch", "Batch inspection", "inspect-batch"),
+    ("inspections/", "history", "Inspection history", "inspect-history"),
+    ("inspections/<int:pk>/", "detail", "Inspection detail", "inspect-detail"),
+    ("inspections/metrics/", "metrics", "Model metrics", "inspect-metrics"),
 ]
 
 
