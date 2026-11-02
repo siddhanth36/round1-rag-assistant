@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "backend.accounts",
     "backend.machines",
+    "backend.assistant",
 ]
 
 MIDDLEWARE = [
