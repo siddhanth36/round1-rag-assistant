@@ -1,14 +1,42 @@
+# --- secrets / local environment ---
 .env
 .env.*
 !.env.example
+
+# --- Python virtual environments ---
 venv/
 .venv/
+
+# --- Python bytecode and tool caches ---
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+
+# --- generated data (rebuildable) ---
+# ChromaDB vector index (rebuilt from the manuals)
+chroma_db/
+# Django uploaded files (MEDIA_ROOT)
+media/
+# temporary uploads / scratch files
+tmp/
+uploads/
+*.tmp
+
+# --- logs ---
+logs/
+*.log
+
+# --- editor / OS / personal tooling ---
 .idea/
 .vscode/
 .DS_Store
-*.log
-chroma_db/
+# Serena coding-assistant config (personal tooling, not required by the team)
+.serena/
+
+# --- challenge pack: share only what the tests need ---
+# Keep: the three equipment manuals + machine_manual_index.csv (read by rag/tests and rag.evaluation).
+# Exclude: challenge brief (PDF/DOCX), START_HERE.txt, duplicate ZIP, accidental README copy.
+challenge-pack/*
+!challenge-pack/Manuals/
+!challenge-pack/machine_manual_index.csv

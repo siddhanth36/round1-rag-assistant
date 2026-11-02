@@ -1,0 +1,20 @@
+# Runtime dependencies of the rag/ package.
+# Tested together on Python 3.13.14 (Kali Linux, CPU):
+#   pymupdf 1.28.2, torch 2.15.0+cpu, sentence-transformers 6.2.0, transformers 5.22.1,
+#   chromadb 1.5.9, numpy 2.5.4
+#
+# Install torch FIRST from the official CPU-only index (avoids several GB of CUDA libraries;
+# all-MiniLM-L6-v2 is small and runs fine on CPU):
+#   python -m pip install "torch>=2.15,<3" --index-url https://download.pytorch.org/whl/cpu
+# then:
+#   python -m pip install -r rag/requirements-dev.txt
+
+# PDF extraction. Held below 2.0: the 2.x major release has not been tested with this code.
+pymupdf>=1.26,<2
+
+# Embeddings (all-MiniLM-L6-v2). torch is listed so the constraint is explicit.
+torch>=2.15,<3
+sentence-transformers>=6.2,<7
+
+# Persistent vector store.
+chromadb>=1.5.9,<2
