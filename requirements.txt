@@ -1,0 +1,22 @@
+# Part B (Django product) dependencies, pinned. Tested on Python 3.14.
+#
+# The RAG engine's dependencies live ONLY in rag/requirements.txt (single source of truth, see
+# docs/RAG_INTEGRATION_CONTRACT.md §11); they are not copied here. Install order:
+#   1. python -m pip install "torch>=2.15,<3" --index-url https://download.pytorch.org/whl/cpu
+#   2. python -m pip install -r rag/requirements.txt
+#   3. python -m pip install -r requirements.txt
+# ponytail: rag/ is not merged into feature/django-product yet, so a "-r rag/requirements.txt" include
+# would make this file uninstallable. Replace step 2 with that include once rag/ is on this branch.
+
+Django==6.1.2
+djangorestframework==3.18.3
+dj-database-url==3.1.2
+psycopg[binary]==3.3.6
+python-dotenv==1.2.4
+# Same version rag/ is tested with (rag/requirements.txt allows >=1.26,<2). Not imported by Django yet:
+# the manuals step uses it (through rag.extract_pdf) to reject unreadable uploads.
+pymupdf==1.28.2
+
+# tests: one runner for both suites (pytest-django runs the Django TestCases, plain pytest runs rag/tests)
+pytest==9.2.0
+pytest-django==4.14.0
