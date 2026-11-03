@@ -117,3 +117,13 @@ fieldset legend { float: none; }
 .limits li { display: flex; gap: var(--space-2); align-items: baseline; }
 .limits .bi { color: var(--color-caution); flex-shrink: 0; }
 .verdict-data dd.mono { font-size: var(--fs-ui); line-height: 1.9; }
+
+/* ---------- product management ---------- */
+@media (min-width: 768px) { .kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.desc-cell { max-width: 22rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+tr.is-inactive td:not(:last-child) { color: var(--color-text-muted); }
+.modal { --bs-modal-bg: var(--color-surface); --bs-modal-border-color: var(--color-divider-strong); --bs-modal-border-radius: var(--radius-md);
+  --bs-modal-header-border-color: var(--color-divider); --bs-modal-footer-border-color: var(--color-divider); --bs-modal-zindex: var(--z-modal);
+  --bs-modal-box-shadow: var(--shadow-overlay); }
+.modal-backdrop { --bs-backdrop-zindex: calc(var(--z-modal) - 1); }

@@ -18,7 +18,8 @@ from backend.accounts.permissions import HasRole, IsAdmin, IsSupervisor
 from backend.inspections import evaluation, services
 from backend.inspections.models import Inspection, Product
 from backend.inspections.serializers import (BatchItemSerializer, BatchSummarySerializer, InspectionSerializer,
-                                             InspectionSummarySerializer, ProductSerializer, ReviewInputSerializer)
+                                             InspectionSummarySerializer, ManagedProductSerializer, ProductSerializer,
+                                             ReviewInputSerializer)
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,14 @@ class ProductList(generics.ListCreateAPIView):
 
     def get_permissions(self):
         return [IsAdmin()] if self.request.method == "POST" else [IsAuthenticated()]
+
+
+class ProductManageList(generics.ListAPIView):
+    """GET /api/products/manage/: Admin only. Every product, active and inactive, ordered by product ID."""
+
+    queryset = Product.objects.order_by("product_id")
+    serializer_class = ManagedProductSerializer
+    permission_classes = [IsAdmin]
 
 
 class ProductDetail(generics.UpdateAPIView):

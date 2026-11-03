@@ -16,6 +16,14 @@ class ProductSerializer(serializers.ModelSerializer):
         return fields
 
 
+class ManagedProductSerializer(ProductSerializer):
+    """Admin management listing: the product object plus its read-only ``created_at``."""
+
+    class Meta(ProductSerializer.Meta):
+        fields = ProductSerializer.Meta.fields + ["created_at"]
+        read_only_fields = ["created_at"]
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     reviewer = serializers.CharField(source="reviewer.username", read_only=True)
 

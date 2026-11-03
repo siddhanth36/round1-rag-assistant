@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/supervisor/questions/", assistant.SupervisorQuestions.as_view()),
     path("api/supervisor/analytics/", assistant.analytics),
     path("api/products/", inspections.ProductList.as_view()),
+    path("api/products/manage/", inspections.ProductManageList.as_view()),  # before <product_id>/
     path("api/products/<str:product_id>/", inspections.ProductDetail.as_view()),
     path("api/inspections/", inspections.Inspections.as_view()),
     path("api/inspections/batches/", inspections.Batches.as_view()),

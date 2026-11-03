@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'css/inspections.css' %}">{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Product Management</h1>
+    <p>Manage registered inspection products and their availability.</p>
+  </div>
+  <button type="button" class="btn btn-primary" id="add-product"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add Product</button>
+</div>
+
+<dl class="kpis kpis-3 m-0 mb-4" id="product-stats" aria-live="polite">
+  <div class="kpi"><dt><i class="bi bi-box-seam" aria-hidden="true"></i>Total products</dt><dd id="stat-total">—</dd></div>
+  <div class="kpi kpi-ok"><dt><i class="bi bi-check-circle" aria-hidden="true"></i>Active</dt><dd id="stat-active">—</dd></div>
+  <div class="kpi"><dt><i class="bi bi-pause-circle" aria-hidden="true"></i>Inactive</dt><dd id="stat-inactive">—</dd></div>
+</dl>
+
+<section class="panel" aria-labelledby="products-h">
+  <div class="panel-head flex-wrap">
+    <h2 id="products-h">Products</h2>
+    <form class="filters" id="filters" role="search">
+      <div>
+        <label class="form-label" for="f-search">Search</label>
+        <input class="form-control form-control-sm" type="search" id="f-search" name="q" placeholder="Product ID or name" autocomplete="off">
+      </div>
+      <div>
+        <label class="form-label" for="f-status">Status</label>
+        <select class="form-select form-select-sm" id="f-status" name="status">
+          <option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div><button class="btn btn-outline-secondary btn-sm" type="reset">Reset</button></div>
+    </form>
+  </div>
+  <div id="products" aria-busy="true"><div class="panel-body"><div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div></div></div>
+</section>
+
+{# Add / edit dialog. product_id is editable only when adding: the server ignores it on PATCH. #}
+<div class="modal fade" id="product-modal" tabindex="-1" aria-labelledby="product-modal-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="product-form" novalidate>
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="product-modal-title">Add Product</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body stack">
+        <div>
+          <label class="form-label" for="p-id">Product ID</label>
+          <input class="form-control mono" id="p-id" name="product_id" placeholder="P-PLATE01" maxlength="32" required autocomplete="off" aria-describedby="p-id-help">
+          <div class="form-text" id="p-id-help">Uppercase letters, digits and hyphens, up to 32 characters. Cannot be changed later.</div>
+        </div>
+        <div>
+          <label class="form-label" for="p-name">Product name</label>
+          <input class="form-control" id="p-name" name="product_name" maxlength="120" required autocomplete="off">
+        </div>
+        <div>
+          <label class="form-label" for="p-description">Description <span class="subtle">(optional)</span></label>
+          <textarea class="form-control" id="p-description" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="p-active" name="is_active" checked>
+          <label class="form-check-label" for="p-active">Active: available for new inspections</label>
+        </div>
+        <div class="notice notice-danger" id="product-errors" role="alert" hidden><i class="bi bi-x-octagon" aria-hidden="true"></i><div></div></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="product-submit">Save product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# Deactivation confirmation: nothing is deleted, inspection history stays. #}
+<div class="modal fade" id="confirm-modal" tabindex="-1" aria-labelledby="confirm-modal-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="confirm-modal-title">Deactivate product?</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="m-0" id="confirm-text"></p>
+        <p class="muted small-ui mt-2 mb-0">The product and its inspection history are kept. You can reactivate it at any time.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirm-ok"><i class="bi bi-pause-circle" aria-hidden="true"></i> Deactivate</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -32,8 +32,10 @@ Source of truth for requirements: `Round2_Student_Challenge_Brief.pdf` and `Roun
 - Each page view only renders `frontend/templates/inspections/<template>.html`, and is wrapped in `@login_required` and `@ensure_csrf_cookie`.
 - The template extends `base.html`, which loads `frontend/static/js/<script>.js` as an ES module.
 - The include in `backend/config/urls.py` already exists. Adding a page means adding a line to `PAGES` plus a template and a script.
-- Page views never enforce roles. Hiding UI by role is cosmetic; the APIs below enforce everything.
-- `backend/inspections/test_pages.py` checks every entry in `PAGES` (login required, renders for every role).
+- Page views never enforce roles, except the entries in `ADMIN_PAGES` (`/products/`, Product Management), which return
+  403 to every role but `ADMIN`. Hiding UI by role is cosmetic; the APIs below enforce everything.
+- `backend/inspections/test_pages.py` checks every entry in `PAGES` (login required, renders for every role);
+  `backend/inspections/test_products.py` checks the Admin-only `/products/` page and its nav link.
 
 **`api.js`:** today it sends JSON bodies only. For multipart uploads, add `FormData` support. Don't set
 `Content-Type`, so the browser adds the boundary, and still send `X-CSRFToken`. Alternatively, reuse the
@@ -136,6 +138,21 @@ XHR upload pattern in `manage.js`, which also gives upload progress.
 - **Request (JSON):** any of `product_name`, `description`, `is_active`. `product_id` can't be changed and is ignored.
 - **Success:** `200`, returning the product object.
 - **Errors:** `404` for an unknown product.
+- Deactivating (`{"is_active": false}`) never deletes the product or its inspections; it only removes the product
+  from `GET /api/products/`, so it can't be chosen for new inspections. `{"is_active": true}` makes it available again.
+
+**`GET /api/products/manage/`**: Product Management listing.
+- **Roles:** ADMIN only. Engineer and Supervisor get 403; anonymous gets 401. GET only (other methods: 405).
+- **Returns:** every product, active **and** inactive, ordered by `product_id`. Same object as above plus the
+  read-only `created_at`. `GET /api/products/` is unchanged (active only, no `created_at`).
+
+```json
+200 [{"product_id": "P-PLATE01", "product_name": "Demonstration metal plate",
+      "description": "Synthetic centered plate with scratches or pits", "is_active": true,
+      "created_at": "2026-11-03T01:23:45.123456Z"}]
+```
+
+The Admin page `/products/` (Product Management) uses this endpoint plus the POST and PATCH above.
 
 Django admin (`/admin/`) also manages products. The brief allows this.
 

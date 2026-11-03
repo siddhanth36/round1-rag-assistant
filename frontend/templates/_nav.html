@@ -21,5 +21,8 @@
   {% if role == "SUPERVISOR" or role == "ADMIN" %}
   <li><a class="nav-item-link" href="/inspections/metrics/" {% if page == "inspect-metrics" %}aria-current="page"{% endif %}><i class="bi bi-grid-3x3" aria-hidden="true"></i>Model metrics</a></li>
   {% endif %}
+  {% if role == "ADMIN" %}
+  <li><a class="nav-item-link" href="/products/" {% if page == "products" %}aria-current="page"{% endif %}><i class="bi bi-box-seam" aria-hidden="true"></i>Product Management</a></li>
+  {% endif %}
 </ul>
 {% endwith %}
